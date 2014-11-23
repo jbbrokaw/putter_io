@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>App demo</title>
+  <link rel="stylesheet" type="text/css" href="static/style.css">
+</head>
+<body>
+  <div id="data-box"></div>
+  <div id="control-box" class="button"></div>
+<!-- See, e.g., https://proto.io/freebies/onoff/ -->
+</body>
+</html>
+
+<script src="http://code.jquery.com/jquery-1.11.1.min.js" type="text/javascript"></script>
+
+<script src="http://underscorejs.org/underscore-min.js" type="text/javascript"></script>
+
+<script src="http://backbonejs.org/backbone.js" type="text/javascript"></script>
+
+<script src="http://js.pusher.com/2.2/pusher.min.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+
+var Record = Backbone.Model.extend({
+  urlRoot: '/data',
+});
+
+var Data = Backbone.Collection.extend({
+  model: Record,
+  url: '/data',
+});
+
+var Controller = Backbone.Model.extend({
+  url: '/controller',
+  id: 0,
+});
+
+var DataView = Backbone.View.extend({
+
+  initialize:function () {
+    this.model.bind("reset", this.render, this);
+    this.listenTo(this.model, 'change', this.render);
+  },
+
+  render:function () {
+    $(this.el).empty();
+    _.each(this.model.models, function (record) {
+      $(this.el).append(new RecordView({model:record}).render().el);
+    }, this);
+    return this;
+  },
+});
+
+var RecordView = Backbone.View.extend({
+  tagName:'div',
+  className:'point',
+
+  render:function (eventName) {
+    $(this.el).text(this.model.get('id'));
+    $(this.el).css('left', this.model.get('time'));
+    $(this.el).css('bottom', this.model.get('value'));
+    return this;
+  }
+});
+
+var ControllerView = Backbone.View.extend({
+  tagName:'div',
+
+  events:
+    {'click': 'toggle', },
+
+  initialize:function () {
+    this.model.bind("reset", this.render, this);
+    this.listenTo(this.model, 'change', this.render);
+  },
+
+  render:function (eventName) {
+    powerval = this.model.get('power')
+    $(this.el).text(powerval);
+    if (powerval == "ON") {
+      $(this.el).removeClass('off')
+      $(this.el).addClass('on')
+    } else {
+      $(this.el).removeClass('on')
+      $(this.el).addClass('off')
+    }
+    return this;
+  },
+
+  toggle:function () {
+    if ($(this.el).text() === "ON") {
+      this.model.set('power', "OFF");
+      this.model.save();
+    } else {
+      $(this.el).text("ON");
+      this.model.set('power', "ON");
+      this.model.save();
+      this.model.trigger('change');
+    }
+  },
+
+});
+
+var dataset = new Data();
+var dataView = new DataView({model: this.dataset, el: $('#data-box')});
+var controller = new Controller();
+var controllerView = new ControllerView({model: this.controller, el: $('#control-box')})
+dataset.fetch({success: function () {
+  dataView.render();
+}});
+
+controller.fetch({success: function () {
+  controllerView.render();
+}})
+
+var poll = function () {
+  dataset.fetch({success: function () {
+    dataset.trigger('change')}
+  });
+}
+
+setInterval(poll, 15000);
+
+
+// Pusher.log = function(message) {
+//   if (window.console && window.console.log) {
+//     window.console.log(message);
+//   }
+// };
+//
+// var pusher = new Pusher('65be64bbb0dbf33a108e');
+// var channel = pusher.subscribe('test_channel');
+// channel.bind('my_event', function(data) {
+//   if (data.message === "refresh") {
+//     dataset.fetch({success: function (model, response, options) {
+//       dataView.render();
+//     }});
+//   }
+// });
+
+</script>

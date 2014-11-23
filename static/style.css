@@ -1,0 +1,39 @@
+#data-box {
+  position: relative;
+  width: 400px;
+  height: 400px;
+  background-color: black;
+}
+
+.point {
+  padding-top: 2pt;
+  position: absolute;
+  border-radius: 50%;
+  font-size: 4pt;
+  color: red;
+  text-align: center;
+  background-color: white;
+  height: 8pt;
+  width: 8pt;
+}
+
+.button {
+  box-sizing: border-box;
+  padding-top: 1.2em;
+  border-radius: 10%;
+  font-size: 20pt;
+  color: yellow;
+  width: 5em;
+  height: 3em;
+  transition:  all 1s;
+}
+
+.on {
+  padding-left: 1.5em;
+  background-color: green;
+}
+
+.off {
+  padding-left: 0.5em;
+  background-color: red;
+}
